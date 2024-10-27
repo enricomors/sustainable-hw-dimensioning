@@ -23,7 +23,6 @@ import logging
 import csv
 
 from codecarbon import EmissionsTracker
-from src import gpuMonitor
 
 
 def parse_data_gme(fname):
@@ -98,9 +97,8 @@ def onlineAnt(ns, mr, file_path):
     avg_mem_usage = [] * m
     gpu_usage = [] * m
 
-    listc, objList, runList, objFinal, runFinal, memFinal, cpuPercUsage, mem, cpuMax, memMax, memPerc, memPercMax, \
-        gpuFinal, gpuMax = \
-        [[] for _ in range(14)]
+    listc, objList, runList, objFinal, runFinal, memFinal, cpuPercUsage, mem, cpuMax, memMax, memPerc, memPercMax = \
+        [[] for _ in range(12)]
 
     run = 0
     ob = 0
@@ -380,11 +378,6 @@ def onlineAnt(ns, mr, file_path):
             except Exception as e:
                 logging.error(f"Failed to set objective: {e}")
 
-            # start gpu monitoring if a gpu is available
-
-            if gpuMonitor.is_gpu_available():
-                gpuMonitor.start_monitoring(interval=0.01)
-
             if not solve():
                 raise RuntimeError("Model solving failed")
 
@@ -414,88 +407,54 @@ def onlineAnt(ns, mr, file_path):
         tracker.stop()
 
         #    time.sleep(0.005)
-        try:
-            # computes the memory usage of solve() function, with sampling interval .01 sec
-            mem_usage = memory_usage(solve, interval=.01, timeout=1)
-            # computes the mean memory usage
-            avg_mem_usage = np.mean(mem_usage)
-            # print(f"average memory usage = {avg_mem_usage}")
-            # get the maximum Resident Set Size (RSS) in kB and converts it in MB
-            mem_max = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000.00
-            mem_max = mem_max / 1000.00
-            # print(f"maximum mem usage = {mem_max}")
-            # estimates the total memory usage
-            mem = np.mean(avg_mem_usage) + 2 * ns
-            # print(f"total memory estimate, taking ns into account = {mem}")
-            process = psutil.Process(os.getpid())
-            test_mem = []
+        # computes the memory usage of solve() function, with sampling interval .01 sec
+        mem_usage = memory_usage(solve, interval=.01, timeout=1)
+        # computes the mean memory usage
+        avg_mem_usage = np.mean(mem_usage)
+        # print(f"average memory usage = {avg_mem_usage}")
+        # get the maximum Resident Set Size (RSS) in kB and converts it in MB
+        mem_max = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000.00
+        mem_max = mem_max / 1000.00
+        # print(f"maximum mem usage = {mem_max}")
+        # estimates the total memory usage
+        mem = np.mean(avg_mem_usage) + 2 * ns
+        # print(f"total memory estimate, taking ns into account = {mem}")
+        process = psutil.Process(os.getpid())
+        test_mem = []
 
-            for i in range(10):
-                time.sleep(.01)
-                memP = process.memory_percent()
-                test_mem.append(round(memP, 2))
+        for i in range(10):
+            time.sleep(.01)
+            memP = process.memory_percent()
+            test_mem.append(round(memP, 2))
 
-            mP = np.mean(test_mem)
-            mPmax = (mP * mem_max) / mem
-            memPerc.append(round(mP, 2))
-            memPercMax.append(round(mPmax, 2))
-            memFinal.append(round(avg_mem_usage, 2))
-            memMax.append(round(mem_max, 2))
+        mP = np.mean(test_mem)
+        mPmax = (mP * mem_max) / mem
+        memPerc.append(round(mP, 2))
+        memPercMax.append(round(mPmax, 2))
+        memFinal.append(round(avg_mem_usage, 2))
+        memMax.append(round(mem_max, 2))
 
-            # check and process gpu usage if available
-            if gpuMonitor.is_gpu_available():
-                gpu_usage = gpuMonitor.gpu_stats # get the collected gpu usage stats
-                if gpu_usage:
-                    # Calculate average and max GPU usage
-                    average_gpu_usage = np.mean(gpu_usage)
-                    max_gpu_usage = np.max(gpu_usage)
-                    gpuFinal.append(average_gpu_usage)
-                    gpuMax.append(max_gpu_usage)
-                else:
-                    # Handle the case where gpu_usage is empty
-                    print("Warning: GPU usage data is empty.")
-                    gpuFinal.append(-1)  # or another appropriate value
-                    gpuMax.append(-1)
-            else:
-                # No GPU
-                gpuFinal.append(-1)
-                gpuMax.append(-1)
+        a10 = shift
+        data = np.array([a1, a2, a3, a9, a6, a7, a4, a5, a8, a10])
+        for k in range(0, len(objList), 96):
+            ob = sum(objList[k:k + 96])
+        for k in range(1, len(runList), 96):
+            run = sum(runList[k:k + 96])
+        runFinal.append(round(run / 3, 2))
+        objFinal.append(round(ob, 2))
+        test_list = []
+        for i in range(10):
+            p = psutil.Process(os.getpid())
+            p_cpu = p.cpu_percent(interval=0.05)
+            test_list.append(round(p_cpu, 3))
+        mcpu = np.mean(test_list)
+        cpuPercUsage.append(round(mcpu, 3))
+        cpuMax.append(round(max(test_list), 3))
 
-            a10 = shift
-            data = np.array([a1, a2, a3, a9, a6, a7, a4, a5, a8, a10])
-            for k in range(0, len(objList), 96):
-                ob = sum(objList[k:k + 96])
-            for k in range(1, len(runList), 96):
-                run = sum(runList[k:k + 96])
-            runFinal.append(round(run / 3, 2))
-            objFinal.append(round(ob, 2))
-            test_list = []
-            for i in range(10):
-                p = psutil.Process(os.getpid())
-                p_cpu = p.cpu_percent(interval=0.05)
-                test_list.append(round(p_cpu, 3))
-            mcpu = np.mean(test_list)
-            cpuPercUsage.append(round(mcpu, 3))
-            cpuMax.append(round(max(test_list), 3))
+        med = np.mean(objFinal)
+        var = np.std(objFinal)
 
-            med = np.mean(objFinal)
-            var = np.std(objFinal)
-
-            print(f"The solution cost (in keuro) is: {med:.2f}")
-            print(f"The runtime (in sec) is: {np.mean(runFinal):.2f}")
-            print(f"Avg memory used (in MB) is: {np.mean(memFinal):.2f}")
-            print(f"Avg GPU usage (in MB) is: {np.mean(gpuFinal):.2f}")
-
-            # save .npy files ("utils" directory)
-            np.save(os.path.join(utils_path, 'obj.npy'), np.asarray(objFinal))
-            np.save(os.path.join(utils_path, 'run.npy'), np.asarray(runFinal))
-            np.save(os.path.join(utils_path, 'mem_avg.npy'), np.asarray(memFinal))
-            np.save(os.path.join(utils_path, 'mem_max.npy'), np.asarray(memMax))
-            np.save(os.path.join(utils_path, 'gpu_avg.npy'), np.asarray(gpuFinal))
-            np.save(os.path.join(utils_path, 'gpu_max.npy'), np.asarray(gpuMax))
-
-        finally:
-            # ensure that gpu monitoring stops even if an error occurs
-            if gpuMonitor.is_gpu_available():
-                gpuMonitor.stop_monitoring_gpu()
+        print(f"The solution cost (in keuro) is: {med:.2f}")
+        print(f"The runtime (in sec) is: {np.mean(runFinal):.2f}")
+        print(f"Avg memory used (in MB) is: {np.mean(memFinal):.2f}")
 
