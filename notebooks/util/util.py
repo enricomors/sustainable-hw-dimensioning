@@ -56,8 +56,7 @@ def parse_data_gme(fname):
     return price_gme_96
 
 
-
-def onlineAnt(ns, mr, file_path):
+def online_ant(ns, mr, file_path):
     """
     Runs the Online Anticipate algorithm on a given instance.
 
@@ -458,3 +457,22 @@ def onlineAnt(ns, mr, file_path):
         print(f"The runtime (in sec) is: {np.mean(runFinal):.2f}")
         print(f"Avg memory used (in MB) is: {np.mean(memFinal):.2f}")
 
+
+def read_csv_file(file):
+    file_path = os.path.join('../data/', file)
+    data = pd.read_csv(file_path)
+    return data
+
+
+def load_instances_data(num_rows=2):
+    data = read_csv_file('InstancesTest.csv')
+    data = data.iloc[:num_rows, 1:]
+    data = data.style.set_properties(**{'text-align': 'left'})
+    return data
+
+
+def load_prices_data(num_rows=5):
+    data = read_csv_file('PricesGME.csv')
+    data = data.rename(columns={'Ora': 'Time', 'Prezzo': 'Price'})
+    data = data.iloc[:num_rows, :]
+    return data
