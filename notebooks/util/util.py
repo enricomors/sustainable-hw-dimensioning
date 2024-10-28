@@ -6,6 +6,7 @@
 """
 @author: allegradefilippo
 """
+from logging import ERROR
 
 from gurobipy import Model
 from gurobipy import GRB
@@ -75,7 +76,7 @@ def online_ant(scenarios, instance, file):
     project_name = f"anticipate-ins-{instance}-ns-{scenarios}"
 
     # Codecarbon emission tracker
-    tracker = EmissionsTracker(project_name=project_name)
+    tracker = EmissionsTracker(project_name=project_name, log_level=ERROR)
 
     # price data from GME
     prices_path = os.path.join('../data/', 'PricesGME.csv')
