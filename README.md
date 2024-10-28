@@ -3,10 +3,16 @@
 This repo contains the project for the Artificial Intelligence in Industry project for the Master's Degree course in 
 Artificial intelligence at UniBo.
 
-## Notes
+## Usage
 
-The current license i'm using on my laptop is the Free Academic License (expiring Feb 6th 2025). I remember I had some
-problems with the gurobi license using docker by the way
+This project uses the Gurobi solver for Linear Programming, for which a License is needed. In order to run the notebook,
+you should first obtain a Web Server License (WSL) file from the Gurobi portal, then copy it in the repo. Then launch:
+
+```commandline
+sudo docker compose up
+```
+
+This will mount the gurobi license as a volume.
 
 ## TODOs
 
