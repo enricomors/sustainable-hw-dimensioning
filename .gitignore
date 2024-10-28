@@ -116,3 +116,6 @@ venv.bak/
 .config/
 .jupyter/
 .wget-hsts
+
+# gurobi license
+gurobi.lic

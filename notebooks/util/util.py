@@ -73,8 +73,6 @@ def online_ant(scenarios, instance, file):
 
     # to save it in emissions.csv
     project_name = f"anticipate-ins-{instance}-ns-{scenarios}"
-    print("Started online ant")
-    print(project_name)
 
     # Codecarbon emission tracker
     tracker = EmissionsTracker(project_name=project_name)
@@ -139,7 +137,6 @@ def online_ant(scenarios, instance, file):
         gc.set_debug(gc.DEBUG_SAVEALL)
         #    print ('Realization',j,'resolution:')
 
-        print("start emission tracker")
         # start emission tracker
         tracker.start()
 
