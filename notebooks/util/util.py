@@ -56,36 +56,31 @@ def parse_data_gme(fname):
     return price_gme_96
 
 
-def online_ant(ns, mr, file_path):
+def online_ant(scenarios, instance, file):
     """
     Runs the Online Anticipate algorithm on a given instance.
 
-    :param ns: Number of scenarios.
-    :param mr: Instance id.
-    :param file_path: path of .csv file containing the instances.
+    :param scenarios: Number of scenarios.
+    :param instance: Instance id.
+    :param file: path of .csv file containing the instances.
     """
 
     # timestamps n instances m scenarios ns
     n = 96
     par = 100
-    parNorm = ns
+    parNorm = scenarios
     m = 1
 
     # to save it in emissions.csv
-    project_name = f"anticipate-ins-{mr}-ns-{ns}"
+    project_name = f"anticipate-ins-{instance}-ns-{scenarios}"
     print("Started online ant")
     print(project_name)
 
     # Codecarbon emission tracker
     tracker = EmissionsTracker(project_name=project_name)
 
-    # file paths
-    input_files_path = os.path.join(os.getcwd(), 'inputDataFiles')
-    utils_path = os.path.join(os.getcwd(), 'utils')
-    output_path = os.path.join(os.getcwd(), 'out')
-
     # price data from GME
-    prices_path = os.path.join(input_files_path, 'PricesGME.csv')
+    prices_path = os.path.join('../data/', 'PricesGME.csv')
     cGrid = parse_data_gme(prices_path)
     cGridSt = np.mean(cGrid)
 
@@ -119,22 +114,24 @@ def online_ant(ns, mr, file_path):
     ubGrid = 600
     trace_solutions = np.zeros((m, n, 9))
 
+    # Read instances file
+    file_path = os.path.join('../data/', file)
     instances = pd.read_csv(file_path)
 
     # instances pv
     instances['PV(kW)'] = instances['PV(kW)'].map(lambda entry: entry[1:-1].split())
     instances['PV(kW)'] = instances['PV(kW)'].map(lambda entry: list(np.float_(entry)))
 
-    pRenPV = [instances['PV(kW)'][mr] for i in range(m)]
+    pRenPV = [instances['PV(kW)'][instance] for i in range(m)]
     np.asarray(pRenPV)
 
     # instances load
     instances['Load(kW)'] = instances['Load(kW)'].map(lambda entry: entry[1:-1].split())
     instances['Load(kW)'] = instances['Load(kW)'].map(lambda entry: list(np.float_(entry)))
-    totCons = [instances['Load(kW)'][mr] for i in range(m)]
+    totCons = [instances['Load(kW)'][instance] for i in range(m)]
     np.asarray(totCons)
 
-    shift = np.load(os.path.join(utils_path, 'realizationsShift.npy'))
+    shift = np.load(os.path.join('../data/', 'realizationsShift.npy'))
     capX1 = 200
 
     for j in range(m):
@@ -155,16 +152,16 @@ def online_ant(ns, mr, file_path):
             # print(f"for {i} in {range(n)}")
 
             # ns = scenarios
-            cap2 = np.zeros((ns, n2))
-            pDiesel2 = np.zeros((ns, n2))
-            pStorageIn2 = np.zeros((ns, n2))
-            pStorageOut2 = np.zeros((ns, n2))
-            pGridIn2 = np.zeros((ns, n2))
-            pGridOut2 = np.zeros((ns, n2))
+            cap2 = np.zeros((scenarios, n2))
+            pDiesel2 = np.zeros((scenarios, n2))
+            pStorageIn2 = np.zeros((scenarios, n2))
+            pStorageOut2 = np.zeros((scenarios, n2))
+            pGridIn2 = np.zeros((scenarios, n2))
+            pGridOut2 = np.zeros((scenarios, n2))
             runtime = 0
 
-            tilde_cons_scen = np.zeros((ns, n2))
-            pRenPV_scen = np.zeros((ns, n2))
+            tilde_cons_scen = np.zeros((scenarios, n2))
+            pRenPV_scen = np.zeros((scenarios, n2))
 
             # Set up logging to a file
             logging.basicConfig(filename='gurobi_debug.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
@@ -255,15 +252,15 @@ def online_ant(ns, mr, file_path):
 
             try:
                 # Second Stage variables
-                pDiesel2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="pDiesel_")
-                pStorageIn2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="pStorageIn_")
-                pStorageOut2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="pStorageOut_")
-                pGridIn2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="pGrid_")
-                pGridOut2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="pGrid_")
-                cap2 = mod.addVars(ns, n2, vtype=GRB.CONTINUOUS, name="cap_")
-                change2 = mod.addVars(ns, n2, vtype=GRB.INTEGER, name="change")
-                phi2 = mod.addVars(ns, n2, vtype=GRB.BINARY, name="phi")
-                notphi2 = mod.addVars(ns, n2, vtype=GRB.BINARY, name="notphi")
+                pDiesel2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="pDiesel_")
+                pStorageIn2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="pStorageIn_")
+                pStorageOut2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="pStorageOut_")
+                pGridIn2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="pGrid_")
+                pGridOut2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="pGrid_")
+                cap2 = mod.addVars(scenarios, n2, vtype=GRB.CONTINUOUS, name="cap_")
+                change2 = mod.addVars(scenarios, n2, vtype=GRB.INTEGER, name="change")
+                phi2 = mod.addVars(scenarios, n2, vtype=GRB.BINARY, name="phi")
+                notphi2 = mod.addVars(scenarios, n2, vtype=GRB.BINARY, name="notphi")
 
                 logging.info("Second stage variables added successfully")
             except Exception as e:
@@ -272,20 +269,20 @@ def online_ant(ns, mr, file_path):
             try:
 
                 # Define Scenarios
-                all_load_scen = np.load(os.path.join(utils_path, 'outfileLoad.npy'))
-                all_PV_scen = np.load(os.path.join(utils_path, 'outfilePV.npy'))
+                all_load_scen = np.load(os.path.join('../data/', 'outfileLoad.npy'))
+                all_PV_scen = np.load(os.path.join('../data/', 'outfilePV.npy'))
 
-                load_scen = np.zeros((ns, n))
-                PV_scen = np.zeros((ns, n))
+                load_scen = np.zeros((scenarios, n))
+                PV_scen = np.zeros((scenarios, n))
 
                 np.random.seed(3)
-                for s in range(ns):
+                for s in range(scenarios):
                     load_scen[s] = np.random.choice(all_load_scen[s], n)
 
-                for s in range(ns):
+                for s in range(scenarios):
                     PV_scen[s] = np.random.choice(all_PV_scen[s], n)
 
-                for s in range(ns):
+                for s in range(scenarios):
                     for z in range(n2):
                         tilde_cons_scen[s, z] = load_scen[s][z]
                         pRenPV_scen[s, z] = PV_scen[s][z]
@@ -298,9 +295,9 @@ def online_ant(ns, mr, file_path):
                 # power balance constraint
                 mod.addConstrs((pRenPV_scen[s, z] + pStorageOut2[s, z] + pGridOut2[s, z] + pDiesel2[s, z] -
                                 pStorageIn2[s, z] - pGridIn2[s, z] == tilde_cons_scen[s, z]
-                                for s in range(ns) for z in range(n2)), "Power balance")
+                                for s in range(scenarios) for z in range(n2)), "Power balance")
 
-                for s in range(ns):
+                for s in range(scenarios):
                     for z in range(n2):
                         mod.addConstr(notphi2[s, z] == 1 - phi2[s, z])
                         mod.addGenConstrIndicator(phi2[s, z], True, pStorageOut2[s, z], GRB.LESS_EQUAL, 0)
@@ -332,15 +329,12 @@ def online_ant(ns, mr, file_path):
             try:
                 # build objective (only Power with direct costs)
                 o = (sum([cGrid[z] * pGridOut2[s, z] + cDiesel * pDiesel2[s, z] - cGrid[z] * pGridIn2[s, z] +
-                          change2[s, z] * cGrid[z] for s in range(ns)]) / ns)
+                          change2[s, z] * cGrid[z] for s in range(scenarios)]) / scenarios)
 
                 logging.info("Built Objective successfully")
             except Exception as e:
                 logging.error(f"Failed to build objective: {e}")
 
-            fp = open(os.path.join(output_path, 'memory_profiler.log'), 'w+')
-
-            @profile(stream=fp)
             def solve():
                 """Optimize VPP planning Model."""
                 try:
@@ -364,11 +358,11 @@ def online_ant(ns, mr, file_path):
                     return False
 
             try:
-                if ns == 1:
+                if scenarios == 1:
                     mod.setObjective(c + o / (5 * par))
-                elif 1 < ns <= 30:
+                elif 1 < scenarios <= 30:
                     mod.setObjective(c + (o - (parNorm / 2)) / par)
-                elif 30 < ns <= 100:
+                elif 30 < scenarios <= 100:
                     mod.setObjective(c + (o - parNorm) / par)
                 else:
                     mod.setObjective(c + (o - (parNorm / 1.5)) / par)
@@ -416,7 +410,7 @@ def online_ant(ns, mr, file_path):
         mem_max = mem_max / 1000.00
         # print(f"maximum mem usage = {mem_max}")
         # estimates the total memory usage
-        mem = np.mean(avg_mem_usage) + 2 * ns
+        mem = np.mean(avg_mem_usage) + 2 * scenarios
         # print(f"total memory estimate, taking ns into account = {mem}")
         process = psutil.Process(os.getpid())
         test_mem = []
