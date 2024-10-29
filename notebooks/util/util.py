@@ -442,3 +442,11 @@ def load_prices_data(num_rows=5):
     data = data.rename(columns={'Ora': 'Time', 'Prezzo': 'Price'})
     data = data.iloc[:num_rows, :]
     return data
+
+
+def load_emissions_data():
+    data = read_csv_file('emissions.csv')
+    columns = ['run_id', 'gpu_power', 'gpu_energy', 'cloud_provider', 'cloud_region', 'gpu_count', 'gpu_model',
+               'on_cloud', 'pue']
+    data = data.drop(columns=columns)
+    return data
