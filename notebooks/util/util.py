@@ -433,7 +433,11 @@ def read_csv_file(file):
 def load_instances_data(num_rows=2):
     data = read_csv_file('InstancesTest.csv')
     data = data.iloc[:num_rows, 1:]
-    data = data.style.set_properties(**{'text-align': 'left'})
+    data = data.style.set_properties(**{'text-align': 'left'}) \
+        .set_table_styles([{
+        'selector': 'th',
+        'props': [('text-align', 'left')]
+    }])
     return data
 
 
@@ -449,4 +453,11 @@ def load_emissions_data():
     columns = ['run_id', 'gpu_power', 'gpu_energy', 'cloud_provider', 'cloud_region', 'gpu_count', 'gpu_model',
                'on_cloud', 'pue']
     data = data.drop(columns=columns)
+    return data
+
+
+def load_benchmark_data(num_rows=10):
+    data = read_csv_file('anticipate_mbp19.csv')
+    data = data.drop(columns=['PV(kW)', 'Load(kW)','gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)'])
+    data = data.iloc[:num_rows, :]
     return data
