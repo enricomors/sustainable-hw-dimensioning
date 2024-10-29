@@ -76,7 +76,10 @@ def online_ant(scenarios, instance, file):
     project_name = f"anticipate-ins-{instance}-ns-{scenarios}"
 
     # Codecarbon emission tracker
-    tracker = EmissionsTracker(project_name=project_name, log_level=ERROR)
+    tracker = EmissionsTracker(
+        project_name=project_name,
+        log_level=ERROR,
+        output_dir='../data/')
 
     # price data from GME
     prices_path = os.path.join('../data/', 'PricesGME.csv')
@@ -445,9 +448,7 @@ def online_ant(scenarios, instance, file):
         med = np.mean(objFinal)
         var = np.std(objFinal)
 
-        print(f"The solution cost (in keuro) is: {med:.2f}")
-        print(f"The runtime (in sec) is: {np.mean(runFinal):.2f}")
-        print(f"Avg memory used (in MB) is: {np.mean(memFinal):.2f}")
+        return med, np.mean(runFinal), np.mean(memFinal)
 
 
 def read_csv_file(file):
