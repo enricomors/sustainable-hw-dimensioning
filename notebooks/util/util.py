@@ -23,8 +23,6 @@ import gc
 import logging
 import csv
 
-from codecarbon import EmissionsTracker
-
 
 def parse_data_gme(fname):
     """parse GME market prices."""
@@ -71,15 +69,6 @@ def online_ant(scenarios, instance, file):
     par = 100
     parNorm = scenarios
     m = 1
-
-    # to save it in emissions.csv
-    project_name = f"anticipate-ins-{instance}-ns-{scenarios}"
-
-    # Codecarbon emission tracker
-    tracker = EmissionsTracker(
-        project_name=project_name,
-        log_level=ERROR,
-        output_dir='../data/')
 
     # price data from GME
     prices_path = os.path.join('../data/', 'PricesGME.csv')
@@ -139,18 +128,10 @@ def online_ant(scenarios, instance, file):
     for j in range(m):
         gc.collect(2)
         gc.set_debug(gc.DEBUG_SAVEALL)
-        #    print ('Realization',j,'resolution:')
-
-        # start emission tracker
-        tracker.start()
-
-        # print(f"for {j} in {range(m)}")
 
         for i in range(n):
             # n2 = remaining step for scenarios
             n2 = n - i
-
-            # print(f"for {i} in {range(n)}")
 
             # ns = scenarios
             cap2 = np.zeros((scenarios, n2))
@@ -194,7 +175,6 @@ def online_ant(scenarios, instance, file):
             #################################################
 
             tilde_cons[i] = (shift[i] + totCons[j][i])
-            #        print tilde_cons
 
             ####################
             # Model constraints
@@ -397,22 +377,15 @@ def online_ant(scenarios, instance, file):
             trace_solutions[j][i] = [mod.objVal, a3[i], a1[i], capX, a2[i], a4[i], a5[i], a6[i], a7[i]]
             objList.append(objX[j][i])
 
-        # stop emission tracker
-        tracker.stop()
-
-        #    time.sleep(0.005)
         # computes the memory usage of solve() function, with sampling interval .01 sec
         mem_usage = memory_usage(solve, interval=.01, timeout=1)
         # computes the mean memory usage
         avg_mem_usage = np.mean(mem_usage)
-        # print(f"average memory usage = {avg_mem_usage}")
         # get the maximum Resident Set Size (RSS) in kB and converts it in MB
         mem_max = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000.00
         mem_max = mem_max / 1000.00
-        # print(f"maximum mem usage = {mem_max}")
         # estimates the total memory usage
         mem = np.mean(avg_mem_usage) + 2 * scenarios
-        # print(f"total memory estimate, taking ns into account = {mem}")
         process = psutil.Process(os.getpid())
         test_mem = []
 
