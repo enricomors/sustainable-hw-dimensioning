@@ -6,3 +6,4 @@ psutil==5.9.7
 scipy==1.12.0
 codecarbon==2.3.2
 gpustat~=1.1.1
+scikit-learn==1.1.2
