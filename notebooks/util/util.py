@@ -475,26 +475,3 @@ def load_benchmark_data(num_rows=10):
     # format specified columns
     data = data.style.format(columns_format)
     return data
-
-
-def get_model_path(algorithm, hw, target):
-    return os.path.join('../data/', f'{algorithm}_{hw}_{target}_DecisionTree_10')
-
-
-def get_hyperparams(algorithm):
-    """Naive method for returning algorithm hyperparams."""
-    if algorithm == 'anticipate':
-        return 'nScenarios'
-    elif algorithm == 'contingency':
-        return 'nTraces'
-
-
-def get_dataset(algorithm, hw):
-    dataset_path = os.path.join('../data/', f'{algorithm}_{hw}.csv')
-
-    if not os.path.exists(dataset_path):
-        raise FileNotFoundError(f'Dataset for ({algorithm}, {hw}) not found.')
-
-    dataset = pd.read_csv(dataset_path)
-
-    return dataset
