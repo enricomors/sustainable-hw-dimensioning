@@ -456,7 +456,8 @@ def load_emissions_data():
     return data
 
 
-def load_benchmark_data(num_rows=10):
+def load_benchmark_data(filename, num_rows=10):
+    file_path = os.path.join('benchmark', filename)
     columns_to_drop = ['PV(kW)', 'Load(kW)','gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)']
     columns_format = {
         'sol(keuro)': '{:.2f}',
@@ -469,7 +470,7 @@ def load_benchmark_data(num_rows=10):
         'ramEnergy(kW)': '{:.2e}',
         'totEnergy(kW)': '{:.2e}',
     }
-    data = read_csv_file('contingency_mbp19.csv')
+    data = read_csv_file(file_path)
     data = data.drop(columns=columns_to_drop)
     data = data.iloc[:num_rows, :]
     # format specified columns
