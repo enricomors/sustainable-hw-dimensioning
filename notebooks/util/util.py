@@ -430,7 +430,15 @@ def read_csv_file(file):
     return data
 
 
-def load_instances_data(num_rows=2):
+def read_benchmark_file(file):
+    file_path = os.path.join('../data/benchmark/', file)
+    columns_to_drop = ['PV(kW)', 'Load(kW)', 'gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)']
+    data = pd.read_csv(file_path)
+    data = data.drop(columns=columns_to_drop)
+    return data
+
+
+def display_instances_data(num_rows=2):
     data = read_csv_file('InstancesTest.csv')
     data = data.iloc[:num_rows, 1:]
     data = data.style.set_properties(**{'text-align': 'left'}) \
@@ -441,14 +449,14 @@ def load_instances_data(num_rows=2):
     return data
 
 
-def load_prices_data(num_rows=5):
+def display_prices_data(num_rows=5):
     data = read_csv_file('PricesGME.csv')
     data = data.rename(columns={'Ora': 'Time', 'Prezzo': 'Price'})
     data = data.iloc[:num_rows, :]
     return data
 
 
-def load_emissions_data():
+def display_emissions_data():
     data = read_csv_file('emissions.csv')
     columns = ['run_id', 'gpu_power', 'gpu_energy', 'cloud_provider', 'cloud_region', 'gpu_count', 'gpu_model',
                'on_cloud', 'pue']
@@ -456,7 +464,7 @@ def load_emissions_data():
     return data
 
 
-def load_benchmark_data(filename, num_rows=10):
+def display_benchmark_data(filename, num_rows=10):
     file_path = os.path.join('benchmark', filename)
     columns_to_drop = ['PV(kW)', 'Load(kW)','gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)']
     columns_format = {
