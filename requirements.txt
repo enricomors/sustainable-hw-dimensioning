@@ -9,3 +9,6 @@ gpustat~=1.1.1
 scikit-learn==1.1.2
 seaborn==0.13.2
 matplotlib==3.9.2
+emllib==1.0.2
+requests==2.28.2
+docplex~=2.25.236
