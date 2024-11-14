@@ -896,11 +896,8 @@ class Datasets(ABC):
         df = process_dataset(df)
 
         hyperparams = self.db.get_hyperparams(algorithm)
-        print(f'hyperparams = {hyperparams}')
         data_targets = self.db.get_targets(algorithm)
-        print(f'data_targets = {data_targets}')
         data_targets.remove('price')
-        print(f'dataframe = {df.columns}')
 
         if set(df.columns) != set(hyperparams + data_targets):
             raise AttributeError(
