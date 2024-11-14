@@ -122,3 +122,7 @@ gurobi.lic
 
 # codecarbon
 .codecarbon.config
+
+# cplex
+cplex_studio2211.linux_x86_64.bin
+

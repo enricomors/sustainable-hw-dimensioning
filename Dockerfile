@@ -1,6 +1,10 @@
 # Specify the base image
 FROM python:3.9-slim-bullseye
 
+COPY cplex_studio2211.linux_x86_64.bin .
+RUN ./cplex_studio2211.linux_x86_64.bin -DLICENSE_ACCEPTED=true -i silent
+RUN python /opt/ibm/ILOG/CPLEX_Studio2211/python/setup.py install
+
 # Install additional Python packages
 RUN pip install --upgrade pip
 RUN pip install jupyter
