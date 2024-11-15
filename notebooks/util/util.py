@@ -29,6 +29,9 @@ import gc
 import logging
 import csv
 
+# ==============================================================================
+# Utility functions and classes
+# ==============================================================================
 
 def parse_data_gme(fname):
     """parse GME market prices."""
@@ -1145,6 +1148,19 @@ class MLModels():
         # del self.ongoing_training[(algorithm, hw, target)]
         # print(self.ongoing_training)
 
+# ==============================================================================
+# Init HADA variables
+# ==============================================================================
+
+data_path = "../data/benchmark/"
+models_path = "../data/models/"
+db = ConfigDB.from_local("../data/configs/")
+datasets = Datasets.from_local(db, data_path)
+models = MLModels(db, datasets, models_path)
+
+# ==============================================================================
+# HADA functions
+# ==============================================================================
 
 def HADA(db: ConfigDB, request, models, var_bounds, robust_coeff):
     """
@@ -1316,3 +1332,75 @@ def HADA(db: ConfigDB, request, models, var_bounds, robust_coeff):
         solution = OptimizationSolution(chosen_hw, hyperparams_values, targets_values)
 
     return solution
+
+
+def run_hada(optimization_request):
+    var_bounds = datasets.get_var_bounds_all(optimization_request)
+    robust_coeff = datasets.get_robust_coeff(models, optimization_request)
+
+    solution = HADA(db, optimization_request, models, var_bounds, robust_coeff)
+    return solution
+
+
+def parse_request_json(data):
+    """
+    Example:
+    {
+        "algorithm":"fwt",
+        "robustness_fact": null,
+        "objective": {"target":"memory", "type": "min"},
+        "constraints": [
+            {'target': 'time', 'type': 'leq', value: 120},
+            ...
+        ],
+        price_per_hw: [
+            {'hw':'pc', price: 30},
+            ...
+        ]
+    }
+    """
+    user_constraints = UserConstraints(db, data['algorithm'])
+    for constraint in data['constraints']:
+        user_constraints.add_constraint(constraint['target'],
+                                        constraint['type'],
+                                        constraint['value'])
+
+    hws_prices = HardwarePrices(db, data['algorithm'])
+    if 'price_per_hw' in data:
+        for hw_price in data['price_per_hw']:
+            hws_prices.add_hw_price(hw_price['hw'], hw_price['price'])
+
+
+    optimization_request = OptimizationRequest(db=db,
+                                               algorithm=data['algorithm'],
+                                               target=data['objective']['target'],
+                                               opt_type=data['objective']['type'],
+                                               robustness_fact=data['robustness_fact'],
+                                               user_constraints=user_constraints,
+                                               hws_prices=hws_prices)
+    return optimization_request
+
+
+def format_solution(solution):
+    sol_hw = {'hw': solution.chosen_hw}
+    sol_hyperparams = {hyperparam:val for hyperparam,val in solution.hyperparams_values.items()}
+    sol_targets = {target:val for target,val in solution.targets_values.items()}
+    out = {**sol_hw, **sol_hyperparams, **sol_targets}
+
+    return out
+
+
+def optimize(request):
+    try:
+        optimization_request = parse_request_json(request)
+        solution = run_hada(optimization_request)
+
+        ret = {'solution': None}
+        if solution:
+            ret = {'solution': format_solution(solution)}
+
+    except Exception as e:
+        print(e)
+        ret = {'error': str(e)}
+
+    return ret
