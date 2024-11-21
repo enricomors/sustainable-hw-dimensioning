@@ -495,6 +495,28 @@ def display_benchmark_data(filename, num_rows=10):
     return data
 
 
+def display_anomaly_data(filename, num_rows=5):
+    file_path = os.path.join('benchmark', filename)
+    columns_to_drop = ['PV(kW)', 'Load(kW)']
+    columns_format = {
+        'sol(keuro)': '{:.2f}',
+        'time(sec)': '{:.2f}',
+        'memAvg(MB)': '{:.2f}',
+        'memPeak(MB)': '{:.2f}',
+        'CO2e(kg)': '{:.2e}',
+        'CO2eRate(kg/s)': '{:.2e}',
+        'cpuEnergy(kW)': '{:.2e}',
+        'ramEnergy(kW)': '{:.2e}',
+        'totEnergy(kW)': '{:.2e}',
+    }
+    data = read_csv_file(file_path)
+    data = data.drop(columns=columns_to_drop)
+    data = data.iloc[:num_rows, :5]
+    # format specified columns
+    data = data.style.format(columns_format)
+    return data
+
+
 def process_dataset(df):
     """
     Processes the dataframe to be compatible with HADA.
