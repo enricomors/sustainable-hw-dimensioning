@@ -126,3 +126,5 @@ gurobi.lic
 # cplex
 bin/
 *.bin
+
+.DS_Store
