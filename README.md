@@ -14,6 +14,3 @@ sudo docker compose up
 ```
 
 This will mount the gurobi license as a volume.
-
-## TODOs
-
