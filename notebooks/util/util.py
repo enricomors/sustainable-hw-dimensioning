@@ -439,14 +439,6 @@ def read_csv_file(file):
     return data
 
 
-def read_benchmark_file(file):
-    file_path = os.path.join('../data/benchmark/', file)
-    columns_to_drop = ['PV(kW)', 'Load(kW)', 'gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)']
-    data = pd.read_csv(file_path)
-    data = data.drop(columns=columns_to_drop)
-    return data
-
-
 def display_instances_data(num_rows=2):
     data = read_csv_file('InstancesTest.csv')
     data = data.iloc[:num_rows, 1:]
@@ -475,7 +467,6 @@ def display_emissions_data():
 
 def display_benchmark_data(filename, num_rows=10):
     file_path = os.path.join('benchmark', filename)
-    columns_to_drop = ['PV(kW)', 'Load(kW)','gpuAvg(MB)', 'gpuPeak(MB)', 'gpuEnergy(kW)']
     columns_format = {
         'sol(keuro)': '{:.2f}',
         'time(sec)': '{:.2f}',
@@ -488,7 +479,6 @@ def display_benchmark_data(filename, num_rows=10):
         'totEnergy(kW)': '{:.2e}',
     }
     data = read_csv_file(file_path)
-    data = data.drop(columns=columns_to_drop)
     data = data.iloc[:num_rows, :]
     # format specified columns
     data = data.style.format(columns_format)
@@ -497,7 +487,6 @@ def display_benchmark_data(filename, num_rows=10):
 
 def display_anomaly_data(filename, num_rows=5):
     file_path = os.path.join('benchmark', filename)
-    columns_to_drop = ['PV(kW)', 'Load(kW)']
     columns_format = {
         'sol(keuro)': '{:.2f}',
         'time(sec)': '{:.2f}',
@@ -510,7 +499,6 @@ def display_anomaly_data(filename, num_rows=5):
         'totEnergy(kW)': '{:.2e}',
     }
     data = read_csv_file(file_path)
-    data = data.drop(columns=columns_to_drop)
     data = data.iloc[:num_rows, :5]
     # format specified columns
     data = data.style.format(columns_format)
