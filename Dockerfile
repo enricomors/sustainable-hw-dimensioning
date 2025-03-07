@@ -1,7 +1,7 @@
 # Specify the base image
 FROM python:3.9-slim-bullseye
 
-COPY bin/cplex_studio2211.linux_x86_64.bin .
+COPY cplex_studio2211.linux_x86_64.bin .
 RUN ./cplex_studio2211.linux_x86_64.bin -DLICENSE_ACCEPTED=true -i silent
 RUN python /opt/ibm/ILOG/CPLEX_Studio2211/python/setup.py install
 

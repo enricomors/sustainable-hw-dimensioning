@@ -14,3 +14,8 @@ sudo docker compose up
 ```
 
 This will mount the gurobi license as a volume.
+
+## Final Thesis
+
+For the thesis i would like to do some data analysis. I would like to gather some indsights about the data
+* Refine the data analysis
