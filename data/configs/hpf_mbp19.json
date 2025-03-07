@@ -1,0 +1,23 @@
+{
+    "name": "hpf",
+    "HW_ID": "mbp19",
+    "HW_price": null,
+    "hyperparams": [
+        {"ID": "algorithm", "description":  null, "type": "str"}
+    ],
+    "targets": [
+        {"ID": "time(s)", "description": null, "type": "float", "LB": null, "UB": null},
+        {"ID": "memPeak(MB)", "description": null, "type": "float",  "LB":null, "UB": null},
+        {"ID": "memAvg(MB)", "description": null, "type": "float", "LB":null, "UB": null},
+        {"ID": "CO2eq(kg)", "description": null, "type": "float", "LB": null, "UB": null},
+        {"ID": "CO2eRate(kg/s)", "description": null, "type": "float", "LB":null, "UB": null},
+        {"ID": "cpuEnergy(kW)", "description": null, "type": "float", "LB":null, "UB": null},
+        {"ID": "ramEnergy(kW)", "description": null, "type": "float", "LB":null, "UB": null},
+        {"ID": "totEnergy(kW)", "description": null, "type": "float", "LB":null, "UB": null},
+        {"ID": "cpuCount", "description": null, "type": "int", "LB":null, "UB": null}
+    ],
+    "inputs": [
+        {"ID": "nodes",  "description": null, "type": "int", "LB": null, "UB": null},
+        {"ID": "arcs",  "description": null, "type": "int", "LB": null, "UB": null}
+    ]
+}
